@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Code Lists (Common Codes)
 
-The **Code Lists** endpoint allows you to retrieve **RRA-managed master codes** such as:
+The **Code Lists** endpoint allows you to retrieve **RRA-managed master codes** via the VSDC interface such as:
 
 *   Taxation types
 *   Unit codes (Packaging & Quantity)
@@ -20,11 +20,12 @@ The **Code Lists** endpoint allows you to retrieve **RRA-managed master codes** 
 These codes are **mandatory dependencies** for many EBM requests (items, sales, stock, purchases).
 
 **Endpoint**
+
 ```http
-POST /selectCodes
+POST /code/selectCodes
 ```
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
 
 ---
 
@@ -38,11 +39,9 @@ This API:
 
 > ℹ️ Code lists should be **cached locally** and refreshed periodically to ensure your application uses the latest valid codes.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
-
 ---
 
-## Request Object: `CodeSearchReq`
+## Request Object: `CodeReq`
 
 ### Request Fields
 
@@ -50,7 +49,6 @@ This API:
 |-------------|-------------------------------------|------|----------|--------|-------|
 | `tin`       | Taxpayer Identification Number      | CHAR | ✅ Yes   | 9      |       |
 | `bhfId`     | Branch ID                           | CHAR | ✅ Yes   | 2      |       |
-| `cmcKey`    | Communication Key                   | CHAR | ✅ Yes   | 255    |       |
 | `lastReqDt` | Last Request Date (YYYYMMDDHHmmss)  | CHAR | ✅ Yes   | 14     |       |
 
 > 🔎 `lastReqDt` filters results to codes **registered or updated after the specified date**. Use a past date (e.g., epoch or initial setup date) to fetch all codes initially.
@@ -63,14 +61,13 @@ This API:
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "lastReqDt": "20180520000000"
 }
 ```
 
 ---
 
-## Response Object: `CodeSearchRes`
+## Response Object: `CodeRes`
 
 ### Top-Level Fields
 
@@ -128,7 +125,7 @@ Each code class contains a list of **detail codes**.
     "clsList": [
       {
         "cdCls": "04",
-        "cdClsNm": "Taxation Type",
+        "cdClsNm": "Tax Type",
         "cdClsDesc": null,
         "useYn": "Y",
         "userDfnNm1": "Tax Rate",
@@ -137,8 +134,8 @@ Each code class contains a list of **detail codes**.
         "dtlList": [
           {
             "cd": "A",
-            "cdNm": "A- EX",
-            "cdDesc": "Exempt",
+            "cdNm": "AEX",
+            "cdDesc": "...",
             "useYn": "Y",
             "srtOrd": 1,
             "userDfnCd1": "0",
@@ -148,7 +145,7 @@ Each code class contains a list of **detail codes**.
           {
             "cd": "B",
             "cdNm": "B-18.00%",
-            "cdDesc": "Standard Rate 18%",
+            "cdDesc": "B18.00%",
             "useYn": "Y",
             "srtOrd": 2,
             "userDfnCd1": "18",
@@ -158,7 +155,7 @@ Each code class contains a list of **detail codes**.
           {
             "cd": "C",
             "cdNm": "C",
-            "cdDesc": "Zero Rated",
+            "cdDesc": "C",
             "useYn": "Y",
             "srtOrd": 3,
             "userDfnCd1": "0",
@@ -168,7 +165,7 @@ Each code class contains a list of **detail codes**.
           {
             "cd": "D",
             "cdNm": "D",
-            "cdDesc": "Other",
+            "cdDesc": "D",
             "useYn": "Y",
             "srtOrd": 4,
             "userDfnCd1": "0",
@@ -194,7 +191,7 @@ Each code class contains a list of **detail codes**.
 
 ```php
 $codes = $client->selectCodeList([
-    'lastReqDt' => date('YmdHis', strtotime('-7 days'))
+    'lastReqDt' => '20180520000000'
 ]);
 
 $clsList = $codes['data']['clsList'] ?? [];
@@ -210,13 +207,13 @@ foreach ($clsList as $cls) {
 }
 ```
 
-</TabItem>
+  </TabItem>
 
-<TabItem value="js" label="JavaScript / Typescript">
+  <TabItem value="js" label="JavaScript / TypeScript">
 
 ```ts
 const response = await client.selectCodeList({
-  lastReqDt: formatDateForEBM(-7),
+  lastReqDt: '20180520000000',
 });
 
 const clsList = response.data?.clsList || [];
@@ -231,13 +228,13 @@ clsList.forEach(cls => {
 });
 ```
 
-</TabItem>
+  </TabItem>
 
-<TabItem value="python" label="Python">
+  <TabItem value="python" label="Python">
 
 ```python
 codes = client.select_code_list({
-    'lastReqDt': last_req_dt()
+    'lastReqDt': '20180520000000'
 })
 
 cls_list = codes.get('data', {}).get('clsList', [])
@@ -249,7 +246,7 @@ for cls in cls_list:
         print(f"  • {detail['cd']} ({detail['cdNm']})")
 ```
 
-</TabItem>
+  </TabItem>
 </Tabs>
 
 ---
@@ -260,11 +257,3 @@ for cls in cls_list:
 *   **Refresh periodically**: Fetch updates daily or weekly to capture new codes or deactivations.
 *   **Validate inputs**: Always validate item, tax, unit, and payment codes against this API before submitting transactions.
 *   **Do not hardcode values**: Unless explicitly permitted by RRA documentation, rely on the API response for valid codes.
-
----
-
-## Next Steps
-
-*   👉 Continue to **[Item Classifications](./items/select-item-classes)**
-*   👉 Review **[Items](./items/select-items)**
-*   👉 Proceed to **[Taxpayers & Branches](./taxpayers/select-taxpayer)**

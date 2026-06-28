@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Device Initialization
 
-The **Device Initialization** endpoint is used to **authenticate and initialize an EBM device** with the Rwanda Revenue Authority (RRA).
+The **Device Initialization** endpoint is used to **authenticate and initialize a VSDC device** with the Rwanda Revenue Authority (RRA).
 
 This is a **mandatory first step** after obtaining your credentials and before submitting **sales, purchases, stock, or items**.
 
@@ -32,7 +32,7 @@ This API:
 
 ---
 
-## Request Object: `DeviceVerificationReq`
+## Request Object: `InitInfoReq`
 
 ### Request Fields
 
@@ -56,7 +56,7 @@ This API:
 
 ---
 
-## Response Object: `DeviceVerificationRes`
+## Response Object: `InitInfoRes`
 
 ### Top-Level Fields
 
@@ -105,6 +105,13 @@ This API:
 | `sdicId` | SDC (Sales Device Control) ID| CHAR      | 12     |
 | `mrcNo`  | MRC Number                   | CHAR      | 11     |
 | `cmcKey` | Communication Key            | CHAR      | 255    |
+| `lastSaleInvcNo` | Last sale invoice number | NUMBER | 38 |
+| `lastPchsInvcNo` | Last purchase invoice number | NUMBER | 38 |
+| `lastSaleRcptNo` | Last sale receipt number | NUMBER | 38 |
+| `lastInvcNo` | Last CIS invoice number | NUMBER | 38 |
+| `lastTrainInvcNo` | Last training invoice number | NUMBER | 38 |
+| `lastProfrmInvcNo` | Last proforma invoice number | NUMBER | 38 |
+| `lastCopyInvcNo` | Last copy invoice number | NUMBER | 38 |
 
 ---
 
@@ -218,6 +225,6 @@ print('CMC Key:', cmc_key)
 
 ## Next Steps
 
-*   👉 Continue to **[Code Lists](./codes/select-code-list)**
-*   👉 Review **[Taxpayers & Branches](./taxpayers/select-taxpayer)**
-*   👉 Start **[Sales Transactions](./transactions/save-sales-transaction)**
+*   👉 Continue to **[Code Lists](./select-code-list)**
+*   👉 Review **[Customers & Branches](./customers/select-customer)**
+*   👉 Start **[Sales Transactions](./purchases/save-sales-transaction)**

@@ -1,5 +1,5 @@
 ---
-title: Save Sales Transaction
+title: Save Sales Transaction (VSDC)
 sidebar_label: Save Sales Transaction
 ---
 
@@ -8,11 +8,12 @@ import TabItem from '@theme/TabItem';
 
 # Save Sales Transaction
 
-The **Sales Transaction Save API** registers a sales transaction in the RRA EBM system. It captures invoice details, customer information, payment, tax amounts, and itemized sale records.
+The **Sales Transaction Save API** registers a sales transaction in the RRA EBM system via the VSDC interface. It captures invoice details, customer information, payment, tax amounts, and itemized sale records.
 
 **Endpoint**
+
 ```http
-POST /saveTrnsSalesVsdc
+POST /trnsSales/saveSales
 ```
 
 ---
@@ -21,11 +22,11 @@ POST /saveTrnsSalesVsdc
 
 This API:
 
-*   Saves a **sales transaction** with header, receipt, and itemized details
-*   Supports **tax calculation, discounts, and optional insurance**
-*   Returns a receipt reference (`curRcptNo`) and internal control data upon success
+*   Saves a **sales transaction** with header, receipt, and itemized details.
+*   Supports **tax calculation, discounts, and optional insurance**.
+*   Returns a receipt reference (`rcptNo`), internal control data, and VSDC signatures upon success.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields documented below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields documented below.
 
 ---
 
@@ -37,11 +38,11 @@ This API:
 |------------|-------------------------------|-------|---------|--------|-------|
 | `tin`      | Taxpayer Identification Number | CHAR  | ✅ Yes  | 9      | Seller's TIN |
 | `bhfId`    | Branch ID                     | CHAR  | ✅ Yes  | 2      | Seller's Branch ID |
-| `cmcKey`   | Communication Key             | CHAR  | ✅ Yes  | 255    | Security Key |
 | `invcNo`   | Invoice Number                | NUMBER| ✅ Yes  | 38     | Unique Invoice Number |
 | `orgInvcNo`| Original Invoice Number       | NUMBER| ✅ Yes  | 38     | 0 for new invoices |
 | `custTin`  | Customer TIN                  | CHAR  | ❌ No   | 9      | Optional |
 | `custNm`   | Customer Name                 | CHAR  | ❌ No   | 60     |       |
+| `salesTyCd`| Sales Type Code               | CHAR  | ✅ Yes  | 5      | See Transaction Type (Usually 'N') |
 | `rcptTyCd` | Receipt Type Code             | CHAR  | ✅ Yes  | 5      | See Sale Receipt Type |
 | `pmtTyCd`  | Payment Type Code             | CHAR  | ❌ No   | 5      | See Payment Method |
 | `salesSttsCd`| Invoice Status Code         | CHAR  | ✅ Yes  | 5      | See Transaction Progress |
@@ -88,7 +89,7 @@ RRA supports Tax Categories A through D.
 |------------|-------------------------------|-------|---------|--------|-------|
 | `custTin`  | Customer TIN                 | CHAR  | ❌ No   | 9      |       |
 | `custMblNo`| Customer Mobile Number       | CHAR  | ❌ No   | 20     |       |
-| `rcptPbctDt`| Receipt Published Date      | CHAR  | ✅ Yes  | 14     | YYYYMMDDhhmmss |
+| `rptNo`    | Report Number                | NUMBER| ❌ No   | 38     |       |
 | `trdeNm`   | Trader Name                  | CHAR  | ❌ No   | 20     |       |
 | `adrs`     | Address                      | CHAR  | ❌ No   | 200    |       |
 | `topMsg`   | Top Message                  | CHAR  | ❌ No   | 20     |       |
@@ -100,8 +101,8 @@ RRA supports Tax Categories A through D.
 | Field        | Description                  | Type   | Required | Length | Notes |
 |-------------|-------------------------------|-------|---------|--------|-------|
 | `itemSeq`   | Item Sequence Number          | NUMBER| ✅ Yes  | 3      |       |
-| `itemClsCd` | Item Code                     | CHAR  | ❌ No   | 10     |       |
-| `itemCd`    | Item Classification Code      | CHAR  | ✅ Yes  | 20     |       |
+| `itemClsCd` | Item Classification Code      | CHAR  | ❌ No   | 10     |       |
+| `itemCd`    | Item Code                     | CHAR  | ✅ Yes  | 20     |       |
 | `itemNm`    | Item Name                     | CHAR  | ✅ Yes  | 200    |       |
 | `bcd`       | Barcode                       | CHAR  | ❌ No   | 20     |       |
 | `pkgUnitCd` | Packaging Unit Code            | CHAR  | ✅ Yes  | 5      | See Packaging Unit |
@@ -118,7 +119,7 @@ RRA supports Tax Categories A through D.
 | `isrcAmt`   | Insurance Amount               | NUMBER| ❌ No   | 18,2   |       |
 | `taxTyCd`   | Taxation Type Code             | CHAR  | ✅ Yes  | 5      | See Tax Type |
 | `taxblAmt`  | Taxable Amount                 | NUMBER| ✅ Yes  | 18,2   |       |
-| `totTaxAmt` | Tax Amount                     | NUMBER| ✅ Yes  | 18,2   |       |
+| `taxAmt`    | Tax Amount                     | NUMBER| ✅ Yes  | 18,2   |       |
 | `totAmt`    | Total Amount                   | NUMBER| ✅ Yes  | 18,2   |       |
 
 ---
@@ -129,7 +130,6 @@ RRA supports Tax Categories A through D.
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "invcNo": 1,
   "orgInvcNo": 0,
   "custTin": "999991112",
@@ -163,14 +163,14 @@ RRA supports Tax Categories A through D.
   "totAmt": 10500,
   "prchrAcptcYn": "N",
   "remark": null,
-  "regrId": "Test",
-  "regrNm": "Test",
-  "modrId": "Test",
-  "modrNm": "Test",
+  "regrId": "Admin",
+  "regrNm": "Admin",
+  "modrId": "Admin",
+  "modrNm": "Admin",
   "receipt": {
     "custTin": null,
     "custMblNo": null,
-    "rcptPbctDt": "20201118120300",
+    "rptNo": 1,
     "trdeNm": null,
     "adrs": null,
     "topMsg": null,
@@ -198,7 +198,7 @@ RRA supports Tax Categories A through D.
       "isrcAmt": null,
       "taxTyCd": "B",
       "taxblAmt": 7000,
-      "totTaxAmt": 1068,
+      "taxAmt": 1068,
       "totAmt": 7000
     },
     {
@@ -221,7 +221,7 @@ RRA supports Tax Categories A through D.
       "isrcAmt": null,
       "taxTyCd": "B",
       "taxblAmt": 3500,
-      "totTaxAmt": 534,
+      "taxAmt": 534,
       "totAmt": 3500
     }
   ]
@@ -241,13 +241,15 @@ RRA supports Tax Categories A through D.
 
 **Response Data**
 
-| Field         | Description            | Type   | Length |
-| ------------- | ---------------------- | ------ | ------ |
-| `curRcptNo`   | Current Receipt Number | NUMBER | 10     |
-| `totRcptNo`   | Total Receipt Number   | NUMBER | 10     |
-| `intrlData`   | Internal Data          | CHAR   | 26     |
-| `rcptSign`    | Receipt Signature      | CHAR   | 16     |
-| `sdcDateTime` | SDC Date Time          | CHAR   | 14     | YYYYMMDDhhmmss |
+| Field             | Description            | Type   | Length | Notes |
+| ----------------- | ---------------------- | ------ | ------ | ----- |
+| `rcptNo`          | Receipt Number         | NUMBER | -      | Current Receipt Number |
+| `totRcptNo`       | Total Receipt Number   | NUMBER | -      | Cumulative Receipt Count |
+| `intrlData`       | Internal Data          | CHAR   | 26     | Control String |
+| `rcptSign`        | Receipt Signature      | CHAR   | 16     | Digital Signature |
+| `vsdcRcptPbctDate`| VSDC Receipt Publish Date | CHAR | 14     | YYYYMMDDhhmmss |
+| `sdcId`           | SDC ID                 | CHAR   | -      | Device ID |
+| `mrcNo`           | MRC Number             | CHAR   | -      | Machine Reference Code |
 
 ---
 
@@ -259,11 +261,13 @@ RRA supports Tax Categories A through D.
   "resultMsg": "It is succeeded",
   "resultDt": "20200226194328",
   "data": {
-    "curRcptNo": "1",
-    "totRcptNo": "1",
-    "intrlData": "EAHSAV6ECUUXSY6PCCJYAUP6MI",
-    "rcptSign": "QUII27MATATSHFRB",
-    "sdcDateTime": "20210502115145"
+    "rcptNo": 27,
+    "totRcptNo": 32,
+    "intrlData": "GZGGIZLYTJSSD7YLYLGIIG6FCY",
+    "rcptSign": "TQZMKL57AGBMSTPO",
+    "vsdcRcptPbctDate": "20211027162114",
+    "sdcId": "SDC010000005",
+    "mrcNo": "WIS01006230"
   }
 }
 ```
@@ -304,13 +308,18 @@ $requestData = [
     'totTaxAmt'    => 1602,
     'totAmt'       => 10500,
     'prchrAcptcYn' => 'N',
-    'regrId'       => 'Test',
-    'regrNm'       => 'Test',
-    'modrId'       => 'Test',
-    'modrNm'       => 'Test',
+    'regrId'       => 'Admin',
+    'regrNm'       => 'Admin',
+    'modrId'       => 'Admin',
+    'modrNm'       => 'Admin',
     'receipt' => [
         'custTin'      => null,
-        'rcptPbctDt'   => '20201118120300',
+        'custMblNo'    => null,
+        'rptNo'        => 1,
+        'trdeNm'       => null,
+        'adrs'         => null,
+        'topMsg'       => null,
+        'btmMsg'       => null,
         'prchrAcptcYn' => 'N'
     ],
     'itemList' => [
@@ -329,7 +338,7 @@ $requestData = [
             'dcAmt'      => 0,
             'taxTyCd'    => 'B',
             'taxblAmt'   => 7000,
-            'totTaxAmt'  => 1068,
+            'taxAmt'     => 1068,
             'totAmt'     => 7000
         ]
     ]
@@ -370,13 +379,18 @@ const requestData = {
   totTaxAmt: 1602,
   totAmt: 10500,
   prchrAcptcYn: 'N',
-  regrId: 'Test',
-  regrNm: 'Test',
-  modrId: 'Test',
-  modrNm: 'Test',
+  regrId: 'Admin',
+  regrNm: 'Admin',
+  modrId: 'Admin',
+  modrNm: 'Admin',
   receipt: {
     custTin: null,
-    rcptPbctDt: '20201118120300',
+    custMblNo: null,
+    rptNo: 1,
+    trdeNm: null,
+    adrs: null,
+    topMsg: null,
+    btmMsg: null,
     prchrAcptcYn: 'N'
   },
   itemList: [
@@ -395,7 +409,7 @@ const requestData = {
       dcAmt: 0,
       taxTyCd: 'B',
       taxblAmt: 7000,
-      totTaxAmt: 1068,
+      taxAmt: 1068,
       totAmt: 7000
     }
   ]
@@ -436,13 +450,18 @@ requestData = {
     'totTaxAmt': 1602,
     'totAmt': 10500,
     'prchrAcptcYn': 'N',
-    'regrId': 'Test',
-    'regrNm': 'Test',
-    'modrId': 'Test',
-    'modrNm': 'Test',
+    'regrId': 'Admin',
+    'regrNm': 'Admin',
+    'modrId': 'Admin',
+    'modrNm': 'Admin',
     'receipt': {
         'custTin': None,
-        'rcptPbctDt': '20201118120300',
+        'custMblNo': None,
+        'rptNo': 1,
+        'trdeNm': None,
+        'adrs': None,
+        'topMsg': None,
+        'btmMsg': None,
         'prchrAcptcYn': 'N'
     },
     'itemList': [
@@ -461,7 +480,7 @@ requestData = {
             'dcAmt': 0,
             'taxTyCd': 'B',
             'taxblAmt': 7000,
-            'totTaxAmt': 1068,
+            'taxAmt': 1068,
             'totAmt': 7000
         }
     ]
@@ -480,12 +499,5 @@ response = client.save_sales_transaction(requestData)
 *   Ensure **TIN, Branch ID, and Communication Key** are correctly configured.
 *   Validate **tax and discount calculations** before saving.
 *   Handle non-`000` result codes gracefully.
-*   Confirm receipt and control unit references are stored for audit.
-
----
-
-## Next Steps
-
-*   👉 **[Customer Search](../customers/select-customer)**
-*   👉 **[Item Search](../items/select-items)**
-*   👉 **[Purchases & Stock](../purchases/select-purchases)**
+*   Confirm receipt and control unit references (`rcptNo`, `intrlData`) are stored for audit.
+*   Ensure `salesTyCd` is set correctly (typically 'N' for normal sales).

@@ -8,7 +8,7 @@ import TabItem from '@theme/TabItem';
 
 # Notices
 
-The **Notices API** allows taxpayers to retrieve **official notices** issued by the **Rwanda Revenue Authority (RRA)**.
+The **Notices API** allows **Virtual Sales Data Controllers (VSDC)** to retrieve **official notices** issued by the **Rwanda Revenue Authority (RRA)**.
 
 Notices may include:
 
@@ -20,7 +20,7 @@ Notices may include:
 **Endpoint**
 
 ```text
-POST /selectNoticeList
+POST /notices/selectNotices
 ```
 
 ---
@@ -30,16 +30,16 @@ POST /selectNoticeList
 This API:
 
 - Retrieves notices created or updated after a specified date and time.
-- Enables taxpayer systems to display official RRA notices.
-- Helps taxpayers stay informed about regulatory and operational updates.
+- Enables VSDC systems to display official RRA notices to users.
+- Helps taxpayers stay informed about regulatory and operational updates via their VSDC interface.
 
 > ℹ️ It is recommended to check for new notices regularly (for example, daily or weekly).
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin` and `bhfId` with every request. Ensure your VSDC is properly registered and authenticated before making this call.
 
 ---
 
-## Request Object: `NoticeSearchReq`
+## Request Object: `NoticeReq`
 
 ### Request Fields
 
@@ -47,10 +47,9 @@ This API:
 |------|-------------|------|----------|-------:|
 | `tin` | Taxpayer Identification Number | CHAR | ✅ Yes | 9 |
 | `bhfId` | Branch ID | CHAR | ✅ Yes | 2 |
-| `cmcKey` | Communication Key | CHAR | ✅ Yes | 255 |
 | `lastReqDt` | Last request date and time (`YYYYMMDDHHmmss`) | CHAR | ✅ Yes | 14 |
 
-> 🔎 `lastReqDt` is used to retrieve only notices created or updated after the specified timestamp.
+> 🔎 `lastReqDt` is used to retrieve only notices created or updated after the specified timestamp. Use this to poll for new content efficiently.
 
 ### JSON Request Example
 
@@ -58,14 +57,13 @@ This API:
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "your-communication-key",
   "lastReqDt": "20200218191141"
 }
 ```
 
 ---
 
-## Response Object: `NoticeSearchRes`
+## Response Object: `NoticeRes`
 
 ### Top-Level Fields
 
@@ -188,16 +186,7 @@ for notice in notice_list:
 
 ## Best Practices
 
-- Check for new notices regularly (daily or weekly).
-- Display notices clearly to users.
-- Store processed notice numbers to avoid duplicate handling.
-- Do not modify or suppress official notice content.
-
----
-
-## Next Steps
-
-* 👉 **[Customers](./customers/select-customer)**
-* 👉 **[Code Lists](./select-code-list)**
-* 👉 **[Sales Transactions](./purchases/save-sales-transaction)**
-
+- **Polling Frequency:** Check for new notices regularly (daily or weekly) using the `lastReqDt` parameter to avoid re-fetching old data.
+- **User Display:** Display notices clearly within the VSDC user interface.
+- **Deduplication:** Store processed `noticeNo` values locally to avoid displaying duplicate notifications to the user.
+- **Integrity:** Do not modify or suppress official notice content retrieved from the RRA.

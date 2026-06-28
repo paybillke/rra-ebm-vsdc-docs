@@ -1,5 +1,5 @@
 ---
-title: Save Purchase Transaction
+title: Save Purchase Transaction (VSDC)
 sidebar_label: Save Purchase Transaction
 ---
 
@@ -8,12 +8,12 @@ import TabItem from '@theme/TabItem';
 
 # Save Purchase Transaction
 
-The **Purchase Transaction Save API** registers a purchase transaction in the RRA EBM system. It captures supplier information, invoice details, payment, tax amounts, and itemized purchase records.
+The **Purchase Transaction Save API** registers a purchase transaction in the RRA EBM system via the VSDC interface. It captures supplier information, invoice details, payment, tax amounts, and itemized purchase records.
 
 **Endpoint**
 
 ```http
-POST /insertTrnsPurchase
+POST /trnsPurchase/savePurchases
 ```
 
 ---
@@ -22,11 +22,11 @@ POST /insertTrnsPurchase
 
 This API:
 
-*   Saves a **purchase transaction** with header and itemized details
-*   Supports **tax calculation, discounts, and optional supplier data**
-*   Returns a result code and message upon success
+*   Saves a **purchase transaction** with header and itemized details to the VSDC/EBM system.
+*   Supports **tax calculation, discounts, and optional supplier data**.
+*   Returns a result code and message upon success.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields documented below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields documented below.
 
 ---
 
@@ -38,13 +38,13 @@ This API:
 | ------------------------ | ----------------------- | ------ | -------- | ------ | ------------------------- |
 | `tin`                    | Taxpayer Identification Number | CHAR   | ✅ Yes    | 9      | Buyer's TIN |
 | `bhfId`                  | Branch ID               | CHAR   | ✅ Yes    | 2      | Buyer's Branch ID |
-| `cmcKey`                 | Communication Key       | CHAR   | ✅ Yes    | 255    | Security Key |
 | `spplrTin`               | Supplier TIN            | CHAR   | ❌ No     | 9      |                           |
 | `invcNo`                 | Invoice Number          | NUMBER | ✅ Yes    | 38     |                           |
 | `orgInvcNo`              | Original Invoice Number | NUMBER | ✅ Yes    | 38     | 0 for new invoices        |
 | `spplrBhfId`             | Supplier Branch ID      | CHAR   | ❌ No     | 2      |                           |
 | `spplrNm`                | Supplier Name           | CHAR   | ❌ No     | 60     |                           |
 | `spplrInvcNo`            | Supplier Invoice Number | NUMBER | ❌ No     | 38     |                           |
+| `spplrSdcId`             | Supplier SDC ID         | CHAR   | ❌ No     | 12     | Required for EBM 2.0 integrations |
 | `regTyCd`                | Registration Type Code  | CHAR   | ✅ Yes    | 5      | See Transaction Progress  |
 | `pchsTyCd`               | Purchase Type Code      | CHAR   | ✅ Yes    | 5      | See Transaction Type      |
 | `rcptTyCd`               | Receipt Type Code       | CHAR   | ✅ Yes    | 5      | See Purchase Receipt Type |
@@ -119,13 +119,13 @@ RRA supports Tax Categories A through D.
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "invcNo": 1,
   "orgInvcNo": 0,
   "spplrTin": null,
   "spplrBhfId": null,
   "spplrNm": null,
   "spplrInvcNo": null,
+  "spplrSdcId": null,
   "regTyCd": "M",
   "pchsTyCd": "N",
   "rcptTyCd": "P",
@@ -154,10 +154,10 @@ RRA supports Tax Categories A through D.
   "totTaxAmt": 1890,
   "totAmt": 10500,
   "remark": null,
-  "regrId": "Test",
-  "regrNm": "Test",
-  "modrId": "Test",
-  "modrNm": "Test",
+  "regrId": "Admin",
+  "regrNm": "Admin",
+  "modrId": "Admin",
+  "modrNm": "Admin",
   "itemList": [
     {
       "itemSeq": 1,
@@ -246,6 +246,7 @@ $requestData = [
     'spplrBhfId'  => null,
     'spplrNm'     => null,
     'spplrInvcNo' => null,
+    'spplrSdcId'  => null, // Optional: Supplier SDC ID for EBM 2.0
     'regTyCd'     => 'M',
     'pchsTyCd'    => 'N',
     'rcptTyCd'    => 'P',
@@ -274,10 +275,10 @@ $requestData = [
     'totTaxAmt'   => 1890,
     'totAmt'      => 10500,
     'remark'      => null,
-    'regrId'      => 'Test',
-    'regrNm'      => 'Test',
-    'modrId'      => 'Test',
-    'modrNm'      => 'Test',
+    'regrId'      => 'Admin',
+    'regrNm'      => 'Admin',
+    'modrId'      => 'Admin',
+    'modrNm'      => 'Admin',
     'itemList'    => [
         [
             'itemSeq'        => 1,
@@ -320,6 +321,7 @@ purchase_data = {
     'spplrBhfId': None,
     'spplrNm': None,
     'spplrInvcNo': None,
+    'spplrSdcId': None, # Optional: Supplier SDC ID for EBM 2.0
     'regTyCd': 'M',
     'pchsTyCd': 'N',
     'rcptTyCd': 'P',
@@ -348,10 +350,10 @@ purchase_data = {
     'totTaxAmt': 1890,
     'totAmt': 10500,
     'remark': None,
-    'regrId': 'Test',
-    'regrNm': 'Test',
-    'modrId': 'Test',
-    'modrNm': 'Test',
+    'regrId': 'Admin',
+    'regrNm': 'Admin',
+    'modrId': 'Admin',
+    'modrNm': 'Admin',
     'itemList': [
         {
             'itemSeq': 1,
@@ -420,6 +422,7 @@ const purchaseData = {
   spplrBhfId: null,
   spplrNm: null,
   spplrInvcNo: null,
+  spplrSdcId: null, // Optional: Supplier SDC ID for EBM 2.0
   regTyCd: 'M',
   pchsTyCd: 'N',
   rcptTyCd: 'P',
@@ -448,10 +451,10 @@ const purchaseData = {
   totTaxAmt: 1890,
   totAmt: 10500,
   remark: null,
-  regrId: 'Test',
-  regrNm: 'Test',
-  modrId: 'Test',
-  modrNm: 'Test',
+  regrId: 'Admin',
+  regrNm: 'Admin',
+  modrId: 'Admin',
+  modrNm: 'Admin',
   itemList: [
     {
       itemSeq: 1,
@@ -515,14 +518,7 @@ console.log(response.resultMsg);
 
 *   Validate **TIN, Branch ID, and Communication Key** before saving.
 *   Ensure **supplier PIN** (if provided) is valid.
+*   For EBM 2.0 integrations, ensure `spplrSdcId` is populated if available.
 *   Ensure **tax, discount, and total amounts** are correct.
 *   Handle non-`000` result codes gracefully.
 *   Store invoice and audit information for reconciliation.
-
----
-
-## Next Steps
-
-*   👉 **[Supplier Search](../suppliers/select-supplier)**
-*   👉 **[Item Search](../items/select-items)**
-*   👉 **[Purchases & Stock](../purchases/select-purchases)**

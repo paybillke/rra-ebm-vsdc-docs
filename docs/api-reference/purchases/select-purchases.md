@@ -11,8 +11,9 @@ import TabItem from '@theme/TabItem';
 The **Purchase-Sales Transaction API** retrieves purchase and sales transactions from the RRA EBM system. It provides supplier, invoice, tax, and itemized details for each transaction.
 
 **Endpoint**
-```http
-POST /selectTrnsPurchaseSalesList
+
+```text
+POST /trnsPurchase/selectTrnsPurchaseSales
 ```
 
 ---
@@ -21,11 +22,11 @@ POST /selectTrnsPurchaseSalesList
 
 This API:
 
-*   Retrieves **purchase and sales transactions** for a branch
-*   Returns **supplier and item details** for each transaction
-*   Supports **reporting and reconciliation** of transaction data
+- Retrieves **purchase and sales transactions** for a branch.
+- Returns **supplier and item details** for each transaction.
+- Supports **reporting and reconciliation** of transaction data.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields documented below.
+> ℹ️ The RRA API requires `tin` and `bhfId` with every request. Ensure your VSDC is properly registered and authenticated before making this call.
 
 ---
 
@@ -35,7 +36,6 @@ This API:
 |------------|-------------------------------|-------|---------|--------|-------|
 | `tin`      | Taxpayer Identification Number | CHAR  | ✅ Yes  | 9      | Buyer's TIN |
 | `bhfId`    | Branch ID                     | CHAR  | ✅ Yes  | 2      | Buyer's Branch ID |
-| `cmcKey`   | Communication Key             | CHAR  | ✅ Yes  | 255    | Security Key |
 | `lastReqDt`| Last Request Date            | CHAR  | ✅ Yes  | 14     | YYYYMMDDhhmmss, fetch recent transactions |
 
 ---
@@ -46,7 +46,6 @@ This API:
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "lastReqDt": "20190524000000"
 }
 ```
@@ -141,11 +140,11 @@ This API:
         "taxRtC": 0,
         "taxRtD": 0,
         "taxAmtA": 0,
-        "taxAmtB": 1602,
+        "taxAmtB": 1890,
         "taxAmtC": 0,
         "taxAmtD": 0,
         "totTaxblAmt": 10500,
-        "totTaxAmt": 1602,
+        "totTaxAmt": 1890,
         "totAmt": 10500,
         "remark": null,
         "itemList": [
@@ -165,8 +164,8 @@ This API:
             "dcAmt": 0,
             "taxTyCd": "B",
             "taxblAmt": 7000,
-            "taxAmt": 1068,
-            "totAmt": 7000
+            "taxAmt": 1260,
+            "totAmt": 10500
           },
           {
             "itemSeq": 2,
@@ -184,8 +183,8 @@ This API:
             "dcAmt": 0,
             "taxTyCd": "B",
             "taxblAmt": 3500,
-            "taxAmt": 534,
-            "totAmt": 3500
+            "taxAmt": 630,
+            "totAmt": 10500
           }
         ]
       }
@@ -202,6 +201,7 @@ This API:
   <TabItem value="php" label="PHP" default>
 
 ```php
+// Assuming $client is your configured VSDC API client
 $requestData = [
     'lastReqDt' => '20190524000000',
 ];
@@ -240,8 +240,8 @@ response = client.select_purchases(requestData)
 
 ## Best Practices
 
-*   Always include **TIN, Branch ID, and Communication Key** in the request payload.
-*   Use `lastReqDt` to fetch only recently updated transactions (incremental sync).
-*   Validate `resultCd` before processing data.
-*   Handle empty `saleList` if no transactions are found.
-*   Note that date fields like `cfmDt` and `stockRlsDt` are returned in `YYYY-MM-DD HH24:MI:SS` format.
+- **Incremental Sync:** Use `lastReqDt` to fetch only recently updated transactions, reducing payload size and processing time.
+- **Validate Success:** Always check that `resultCd` is `000` before processing the `saleList`.
+- **Handle Empty Results:** Be prepared to handle an empty `saleList` if no new transactions are found.
+- **Date Formats:** Note that `cfmDt` and `stockRlsDt` are returned in `YYYY-MM-DD HH24:MI:SS` format, while `salesDt` is `YYYYMMDD`.
+- **Tax Calculation:** Verify that the sum of item-level taxable amounts and tax amounts matches the transaction-level totals (`totTaxblAmt`, `totTaxAmt`).

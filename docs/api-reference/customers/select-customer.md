@@ -202,6 +202,6 @@ for cust in cust_list:
 
 ## Next Steps
 
-*   👉 **[Code Lists](../codes/select-code-list)**
+*   👉 **[Code Lists](../select-code-list)**
 *   👉 **[Item Search](../items/select-items)**
-*   👉 **[Sales / Invoice Submission](../transactions/save-sales-transaction)**
+*   👉 **[Sales / Invoice Submission](../purchases/save-sales-transaction)**

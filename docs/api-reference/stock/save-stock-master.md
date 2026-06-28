@@ -13,7 +13,7 @@ The **Save Stock Master API** registers or updates stock master information for 
 **Endpoint**
 
 ```text
-POST /saveStockMaster
+POST /stockMaster/saveStockMaster
 ```
 
 ---
@@ -26,37 +26,41 @@ This API:
 - Updates the remaining quantity of an item.
 - Records registration and modification information.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin` and `bhfId` with every request. Ensure your VSDC is properly registered and authenticated before making this call.
 
 ---
 
-## Request Object: `StockMasterSaveReq`
+## Request Object: `StockMstSaveReq`
 
 | Field | Description | Type | Required | Length |
 |------|-------------|------|----------|-------:|
+| `tin` | Taxpayer Identification Number | CHAR | ✅ Yes | 9 |
+| `bhfId` | Branch ID | CHAR | ✅ Yes | 2 |
 | `itemCd` | Item Code | CHAR | ✅ Yes | 20 |
 | `rsdQty` | Remaining Quantity | NUMBER | ✅ Yes | 13,2 |
-| `regrId` | Registration ID | CHAR | ✅ Yes | 20 |
-| `regrNm` | Registration Name | CHAR | ✅ Yes | 60 |
-| `modrId` | Modifier ID | CHAR | ✅ Yes | 20 |
+| `regrNm` | Registrant Name | CHAR | ✅ Yes | 60 |
+| `regrId` | Registrant ID | CHAR | ✅ Yes | 20 |
 | `modrNm` | Modifier Name | CHAR | ✅ Yes | 60 |
+| `modrId` | Modifier ID | CHAR | ✅ Yes | 20 |
 
 ### JSON Request Example
 
 ```json
 {
+  "tin": "999991130",
+  "bhfId": "00",
   "itemCd": "RW1NTXU0000002",
   "rsdQty": 10,
-  "regrId": "Test",
-  "regrNm": "Test",
-  "modrId": "Test",
-  "modrNm": "Test"
+  "regrId": "Admin",
+  "regrNm": "Admin",
+  "modrNm": "Admin",
+  "modrId": "Admin"
 }
 ```
 
 ---
 
-## Response Object: `StockMasterSaveRes`
+## Response Object: `StockMstSaveRes`
 
 | Field | Description | Type |
 |------|-------------|------|
@@ -84,13 +88,14 @@ This API:
   <TabItem value="php" label="PHP" default>
 
 ```php
+// Assuming $client is your configured VSDC API client
 $response = $client->saveStockMaster([
     'itemCd' => 'RW1NTXU0000002',
     'rsdQty' => 10,
-    'regrId' => 'Test',
-    'regrNm' => 'Test',
-    'modrId' => 'Test',
-    'modrNm' => 'Test',
+    'regrId' => 'Admin',
+    'regrNm' => 'Admin',
+    'modrId' => 'Admin',
+    'modrNm' => 'Admin',
 ]);
 
 if (($response['resultCd'] ?? '') === '000') {
@@ -106,10 +111,10 @@ if (($response['resultCd'] ?? '') === '000') {
 const response = await client.saveStockMaster({
   itemCd: 'RW1NTXU0000002',
   rsdQty: 10,
-  regrId: 'Test',
-  regrNm: 'Test',
-  modrId: 'Test',
-  modrNm: 'Test',
+  regrId: 'Admin',
+  regrNm: 'Admin',
+  modrId: 'Admin',
+  modrNm: 'Admin',
 });
 
 console.log(response.resultMsg);
@@ -123,10 +128,10 @@ console.log(response.resultMsg);
 response = client.save_stock_master({
     "itemCd": "RW1NTXU0000002",
     "rsdQty": 10,
-    "regrId": "Test",
-    "regrNm": "Test",
-    "modrId": "Test",
-    "modrNm": "Test",
+    "regrId": "Admin",
+    "regrNm": "Admin",
+    "modrId": "Admin",
+    "modrNm": "Admin",
 })
 
 if response.get("resultCd") == "000":
@@ -140,7 +145,7 @@ if response.get("resultCd") == "000":
 
 ## Best Practices
 
-- Ensure `itemCd` references an existing item.
-- Keep the remaining quantity (`rsdQty`) synchronized with your inventory records.
-- Use consistent registration and modifier information for audit purposes.
-- Verify that the request completed successfully by checking `resultCd`.
+- Ensure `itemCd` references an existing item in your item master list.
+- Keep the remaining quantity (`rsdQty`) synchronized with your physical inventory records.
+- Use consistent and accurate registration (`regr`) and modifier (`modr`) information for audit purposes.
+- Verify that the request completed successfully by checking that `resultCd` is `000`.

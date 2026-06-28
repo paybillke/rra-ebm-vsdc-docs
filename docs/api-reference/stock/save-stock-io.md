@@ -13,7 +13,7 @@ The **Stock In/Out API** records stock movement transactions for inventory enter
 **Endpoint**
 
 ```text
-POST /insertStockIO
+POST /stock/saveStockItems
 ```
 
 ---
@@ -26,7 +26,7 @@ This API:
 - Updates inventory movement at the item level.
 - Captures pricing, tax, and quantity information for inventory reconciliation and reporting.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields documented below.
+> ℹ️ The RRA API requires `tin` and `bhfId` with every request. Ensure your VSDC is properly registered and authenticated before making this call.
 
 ---
 
@@ -36,18 +36,20 @@ This API:
 
 | Field | Description | Type | Required | Length | Notes |
 |------|-------------|------|----------|-------:|------|
-| `sarNo` | Stored and Released Number | NUMBER | ✅ Yes | 38 | |
-| `orgSarNo` | Original Stored and Released Number | NUMBER | ✅ Yes | 38 | |
+| `tin` | Taxpayer Identification Number | CHAR | ✅ Yes | 9 | |
+| `bhfId` | Branch ID | CHAR | ✅ Yes | 2 | |
+| `sarNo` | Stored and Released Number | NUMBER | ✅ Yes | 38 | Unique identifier for this transaction |
+| `orgSarNo` | Original Stored and Released Number | NUMBER | ✅ Yes | 38 | Usually same as `sarNo` for new entries |
 | `regTyCd` | Registration Type Code | CHAR | ✅ Yes | 5 | See **Registration Type** |
-| `custTin` | Customer TIN | CHAR | ❌ No | 9 | |
+| `custTin` | Customer TIN | CHAR | ❌ No | 9 | Required if transferring to another taxpayer |
 | `custNm` | Customer Name | CHAR | ❌ No | 100 | |
 | `custBhfId` | Customer Branch ID | CHAR | ❌ No | 2 | |
-| `sarTyCd` | Stock In/Out Type Code | CHAR | ✅ Yes | 5 | See **Stock In/Out** |
-| `ocrnDt` | Occurred Date (`YYYYMMDD`) | CHAR | ✅ Yes | 8 | |
-| `totItemCnt` | Total Item Count | NUMBER | ✅ Yes | 10 | |
-| `totTaxblAmt` | Total Supply Price | NUMBER | ✅ Yes | 18,2 | |
-| `totTaxAmt` | Total VAT | NUMBER | ✅ Yes | 18,2 | |
-| `totAmt` | Total Amount | NUMBER | ✅ Yes | 18,2 | |
+| `sarTyCd` | Stock In/Out Type Code | CHAR | ✅ Yes | 5 | See **Stock In/Out Type** |
+| `ocrnDt` | Occurred Date (`YYYYMMDD`) | CHAR | ✅ Yes | 8 | Date the movement actually happened |
+| `totItemCnt` | Total Item Count | NUMBER | ✅ Yes | 10 | Number of distinct items in `itemList` |
+| `totTaxblAmt` | Total Supply Price | NUMBER | ✅ Yes | 18,2 | Sum of taxable amounts |
+| `totTaxAmt` | Total VAT | NUMBER | ✅ Yes | 18,2 | Sum of tax amounts |
+| `totAmt` | Total Amount | NUMBER | ✅ Yes | 18,2 | Sum of total amounts |
 | `remark` | Remark | CHAR | ❌ No | 400 | |
 | `regrId` | Registration ID | CHAR | ✅ Yes | 20 | |
 | `regrNm` | Registration Name | CHAR | ✅ Yes | 60 | |
@@ -58,25 +60,25 @@ This API:
 
 ### Stock Item List (`itemList`)
 
-| Field | Description | Type | Required | Notes |
-|------|-------------|------|----------|------|
-| `itemSeq` | Item Sequence | NUMBER | ✅ Yes | |
-| `itemCd` | Item Code | CHAR | ❌ No | 20 |
-| `itemClsCd` | Item Class Code | CHAR | ✅ Yes | 10 |
-| `itemNm` | Item Name | CHAR | ✅ Yes | 200 |
-| `bcd` | Barcode | CHAR | ❌ No | 20 |
-| `pkgUnitCd` | Package Unit Code | CHAR | ✅ Yes | See **Packaging Unit** |
-| `pkg` | Package Quantity | NUMBER | ✅ Yes | 13,2 |
-| `qtyUnitCd` | Quantity Unit Code | CHAR | ✅ Yes | See **Quantity Unit** |
-| `qty` | Quantity | NUMBER | ✅ Yes | 13,2 |
-| `itemExprDt` | Expiration Date (`YYYYMMDD`) | CHAR | ❌ No | 8 |
-| `prc` | Unit Price | NUMBER | ✅ Yes | 15,2 |
-| `splyAmt` | Supply Amount | NUMBER | ✅ Yes | 18,2 |
-| `totDcAmt` | Discount Amount | NUMBER | ✅ Yes | 18,2 |
-| `taxblAmt` | Taxable Amount | NUMBER | ✅ Yes | 18,2 |
-| `taxTyCd` | Tax Type Code | CHAR | ✅ Yes | See **Tax Type** |
-| `taxAmt` | Tax Amount | NUMBER | ✅ Yes | 18,2 |
-| `totAmt` | Total Amount | NUMBER | ✅ Yes | 18,2 |
+| Field | Description | Type | Required | Length | Notes |
+|------|-------------|------|----------|-------:|------|
+| `itemSeq` | Item Sequence | NUMBER | ✅ Yes | 3 | Sequential number (1, 2, 3...) |
+| `itemCd` | Item Code | CHAR | ❌ No | 20 | |
+| `itemClsCd` | Item Class Code | CHAR | ✅ Yes | 10 | |
+| `itemNm` | Item Name | CHAR | ✅ Yes | 200 | |
+| `bcd` | Barcode | CHAR | ❌ No | 20 | |
+| `pkgUnitCd` | Package Unit Code | CHAR | ✅ Yes | 5 | See **Packaging Unit** |
+| `pkg` | Package Quantity | NUMBER | ✅ Yes | 13,2 | |
+| `qtyUnitCd` | Quantity Unit Code | CHAR | ✅ Yes | 5 | See **Quantity Unit** |
+| `qty` | Quantity | NUMBER | ✅ Yes | 13,2 | |
+| `itemExprDt` | Expiration Date (`YYYYMMDD`) | CHAR | ❌ No | 8 | |
+| `prc` | Unit Price | NUMBER | ✅ Yes | 15,2 | |
+| `splyAmt` | Supply Amount | NUMBER | ✅ Yes | 18,2 | |
+| `totDcAmt` | Discount Amount | NUMBER | ✅ Yes | 18,2 | |
+| `taxblAmt` | Taxable Amount | NUMBER | ✅ Yes | 18,2 | |
+| `taxTyCd` | Tax Type Code | CHAR | ✅ Yes | 5 | See **Tax Type** |
+| `taxAmt` | Tax Amount | NUMBER | ✅ Yes | 18,2 | |
+| `totAmt` | Total Amount | NUMBER | ✅ Yes | 18,2 | |
 
 ---
 
@@ -84,6 +86,8 @@ This API:
 
 ```json
 {
+  "tin": "999991130",
+  "bhfId": "00",
   "sarNo": 2,
   "orgSarNo": 2,
   "regTyCd": "M",
@@ -94,21 +98,21 @@ This API:
   "ocrnDt": "20200126",
   "totItemCnt": 2,
   "totTaxblAmt": 70000,
-  "totTaxAmt": 10677.96,
+  "totTaxAmt": 12000,
   "totAmt": 70000,
   "remark": null,
-  "regrId": "Test",
-  "regrNm": "Test",
-  "modrId": "Test",
-  "modrNm": "Test",
+  "regrId": "Admin",
+  "regrNm": "Admin",
+  "modrId": "Admin",
+  "modrNm": "Admin",
   "itemList": [
     {
       "itemSeq": 1,
       "itemCd": "RW1NTXU0000001",
       "itemClsCd": "5059690800",
-      "itemNm": "Test Item 1",
+      "itemNm": "test item 1",
       "bcd": null,
-      "pkgUnitCd": "NT",
+      "pkgUnitCd": "NI",
       "pkg": 10,
       "qtyUnitCd": "U",
       "qty": 10,
@@ -118,16 +122,16 @@ This API:
       "totDcAmt": 0,
       "taxblAmt": 35000,
       "taxTyCd": "B",
-      "taxAmt": 5338.98,
+      "taxAmt": 6000,
       "totAmt": 35000
     },
     {
       "itemSeq": 2,
       "itemCd": "RW1NTXU0000002",
       "itemClsCd": "5059690800",
-      "itemNm": "Test Item 2",
+      "itemNm": "test item 2",
       "bcd": null,
-      "pkgUnitCd": "BL",
+      "pkgUnitCd": "NI",
       "pkg": 10,
       "qtyUnitCd": "U",
       "qty": 10,
@@ -137,7 +141,7 @@ This API:
       "totDcAmt": 0,
       "taxblAmt": 35000,
       "taxTyCd": "B",
-      "taxAmt": 5338.98,
+      "taxAmt": 6000,
       "totAmt": 35000
     }
   ]
@@ -169,8 +173,6 @@ This API:
 ---
 
 ## SDK Usage Examples
-
-The SDK automatically includes `tin`, `bhfId`, and `cmcKey`, so only business-specific fields are required.
 
 <Tabs>
   <TabItem value="php" label="PHP" default>
@@ -211,8 +213,9 @@ if response.get("resultCd") == "000":
 
 ## Best Practices
 
-- Verify that the request completed successfully by checking `resultCd`.
-- Ensure totals (`totTaxblAmt`, `totTaxAmt`, and `totAmt`) match the values calculated from `itemList`.
-- Use valid stock movement, registration type, tax type, packaging unit, and quantity unit codes.
-- Keep inventory quantities synchronized with stock movement transactions.
-- Set `ocrnDt` to the actual date the stock movement occurred.
+- **Verify Success:** Always check that `resultCd` is `000` to confirm the transaction was recorded.
+- **Mathematical Accuracy:** Ensure that `totTaxblAmt`, `totTaxAmt`, and `totAmt` exactly match the sum of the corresponding fields in the `itemList`.
+- **Valid Codes:** Use valid codes for `sarTyCd` (Stock In/Out Type), `regTyCd` (Registration Type), `taxTyCd` (Tax Type), `pkgUnitCd`, and `qtyUnitCd`.
+- **Inventory Sync:** Keep your local inventory quantities synchronized with the results of these stock movement transactions.
+- **Date Accuracy:** Set `ocrnDt` to the actual date the stock movement occurred, not necessarily the current system date.
+

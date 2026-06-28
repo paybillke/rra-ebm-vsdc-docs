@@ -1,6 +1,6 @@
 ---
-title: Branch Customers
-sidebar_label: Branch Customers
+title: Save Branch Customer
+sidebar_label: Save Branch Customer
 ---
 
 import Tabs from '@theme/Tabs';
@@ -8,15 +8,16 @@ import TabItem from '@theme/TabItem';
 
 # Save Branch Customer
 
-The **Save Branch Customer API** stores or updates customer information for a specific branch in the **RRA EBM system**.  
+The **Save Branch Customer API** stores or updates customer information for a specific branch in the **RRA EBM system** via the VSDC interface.  
 It includes essential customer details such as TIN, name, contact info, and status.
 
 **Endpoint**
+
 ```http
-POST /saveBhfCustomer
+POST /branches/saveBrancheCustomers
 ```
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
 
 ---
 
@@ -28,7 +29,6 @@ POST /saveBhfCustomer
 |------------|------------------------------|------|----------|--------|-------|
 | `tin`      | Taxpayer Identification Number | CHAR | ✅ Yes   | 9      | Seller's TIN |
 | `bhfId`    | Branch ID                    | CHAR | ✅ Yes   | 2      | Seller's Branch ID |
-| `cmcKey`   | Communication Key            | CHAR | ✅ Yes   | 255    | Security Key |
 | `custNo`   | Customer Number              | CHAR | ✅ Yes   | 9      | Unique identifier for the customer in your system |
 | `custTin`  | Customer TIN                 | CHAR | ✅ Yes   | 9      | Buyer's TIN |
 | `custNm`   | Customer Name                | CHAR | ✅ Yes   | 60     |       |
@@ -49,22 +49,21 @@ POST /saveBhfCustomer
 
 ```json
 {
-  "tin": "999991130",
+  "tin": "999000099",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "custNo": "999991113",
-  "custTin": "999991113",
-  "custNm": "Taxpayer1113",
+  "custTin": "107397100",
+  "custNm": "ERIRWANDA",
   "adrs": null,
   "telNo": null,
   "email": null,
   "faxNo": null,
   "useYn": "Y",
   "remark": null,
-  "regrId": "Test",
-  "regrNm": "Test",
-  "modrId": "Test",
-  "modrNm": "Test"
+  "regrNm": "Admin",
+  "regrId": "Admin",
+  "modrNm": "Admin",
+  "modrId": "Admin"
 }
 ```
 
@@ -99,72 +98,23 @@ POST /saveBhfCustomer
 ## SDK Usage Examples
 
 <Tabs>
-  <TabItem value="python" label="Python" default>
-
-```python
-customer_data = {
-    'custNo': '999991113',
-    'custTin': '999991113',
-    'custNm': 'Taxpayer1113',
-    'adrs': None,
-    'telNo': None,
-    'email': None,
-    'faxNo': None,
-    'useYn': 'Y',
-    'remark': None,
-    'regrId': 'Test',
-    'regrNm': 'Test',
-    'modrId': 'Test',
-    'modrNm': 'Test',
-}
-
-response = client.save_branch_customer(customer_data)
-
-if response.get('resultCd') == '000':
-    print("✅ Branch customer saved successfully")
-else:
-    abort(f"Failed to save branch customer: {response.get('resultMsg', 'Unknown error')}")
-```
-
-  </TabItem>
-
-  <TabItem value="js" label="JavaScript / TypeScript">
-
-```ts
-const response = await client.saveBranchCustomer({
-  custNo: `CUST123456`,
-  custTin: '999991113',
-  custNm: `Test Customer ${Date.now()}`,
-  useYn: 'Y',
-  regrId: 'Test',
-  regrNm: 'Test',
-  modrId: 'Test',
-  modrNm: 'Test',
-});
-
-console.log(`✅ Branch customer saved: ${response.resultMsg}`);
-expect(response.resultCd).toBe('000');
-```
-
-  </TabItem>
-
-  <TabItem value="php" label="PHP">
+  <TabItem value="php" label="PHP" default>
 
 ```php
 $requestData = [
     'custNo'    => '999991113',
-    'custTin'   => '999991113',
-    'custNm'    => 'Taxpayer1113',
+    'custTin'   => '107397100',
+    'custNm'    => 'ERIRWANDA',
     'adrs'      => null,
     'telNo'     => null,
     'email'     => null,
     'faxNo'     => null,
     'useYn'     => 'Y',
     'remark'    => null,
-    'regrId'    => 'Test',
-    'regrNm'    => 'Test',
-    'modrId'    => 'Test',
-    'modrNm'    => 'Test',
+    'regrId'    => 'Admin',
+    'regrNm'    => 'Admin',
+    'modrId'    => 'Admin',
+    'modrNm'    => 'Admin',
 ];
 
 $response = $client->saveBranchCustomer($requestData);
@@ -174,6 +124,62 @@ if (($response['resultCd'] ?? '') === '000') {
 } else {
     abort("Failed to save branch customer: " . ($response['resultMsg'] ?? 'Unknown error'));
 }
+```
+
+  </TabItem>
+
+  <TabItem value="js" label="JavaScript / TypeScript">
+
+```ts
+const response = await client.saveBranchCustomer({
+  custNo: '999991113',
+  custTin: '107397100',
+  custNm: 'ERIRWANDA',
+  adrs: null,
+  telNo: null,
+  email: null,
+  faxNo: null,
+  useYn: 'Y',
+  remark: null,
+  regrId: 'Admin',
+  regrNm: 'Admin',
+  modrId: 'Admin',
+  modrNm: 'Admin',
+});
+
+console.log(`✅ Branch customer saved: ${response.resultMsg}`);
+if (response.resultCd !== '000') {
+  throw new Error(`Failed: ${response.resultMsg}`);
+}
+```
+
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+
+```python
+customer_data = {
+    'custNo': '999991113',
+    'custTin': '107397100',
+    'custNm': 'ERIRWANDA',
+    'adrs': None,
+    'telNo': None,
+    'email': None,
+    'faxNo': None,
+    'useYn': 'Y',
+    'remark': None,
+    'regrId': 'Admin',
+    'regrNm': 'Admin',
+    'modrId': 'Admin',
+    'modrNm': 'Admin',
+}
+
+response = client.save_branch_customer(customer_data)
+
+if response.get('resultCd') == '000':
+    print("✅ Branch customer saved successfully")
+else:
+    raise Exception(f"Failed to save branch customer: {response.get('resultMsg', 'Unknown error')}")
 ```
 
   </TabItem>
@@ -187,4 +193,3 @@ if (($response['resultCd'] ?? '') === '000') {
 *   Use the `useYn` flag to deactivate customers without deleting them to preserve historical transaction integrity.
 *   Provide `regrId` and `modrId` for accurate audit tracking.
 *   Optional fields like address, email, and phone can be left null if unavailable.
-

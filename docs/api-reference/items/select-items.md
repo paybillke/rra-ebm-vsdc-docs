@@ -8,12 +8,13 @@ import TabItem from '@theme/TabItem';
 
 # Select Items 
 
-The **Select Items API** retrieves product master data from the **RRA EBM system**.  
+The **Select Items API** retrieves product master data from the **RRA EBM system** via the VSDC interface.  
 It allows clients to fetch items that have been registered or updated within a given date range.
 
 **Endpoint**
+
 ```http
-POST /selectItemList
+POST /items/selectItems
 ```
 
 ---
@@ -28,11 +29,11 @@ This API:
 
 > ⚠️ Always validate the returned item codes, tax types, and units against **Code Lists** and **Item Classifications** APIs.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
 
 ---
 
-## Request Object: `ItemSearchReq`
+## Request Object: `ItemReq`
 
 ### Request Fields
 
@@ -40,7 +41,6 @@ This API:
 |-------------|-------------------------------------|------|----------|--------|-------|
 | `tin`       | Taxpayer Identification Number      | CHAR | ✅ Yes   | 9      |       |
 | `bhfId`     | Branch ID                           | CHAR | ✅ Yes   | 2      | '00' for Head Office |
-| `cmcKey`    | Communication Key                   | CHAR | ✅ Yes   | 255    |       |
 | `lastReqDt` | Last request date (YYYYMMDDHHmmss)  | CHAR | ✅ Yes   | 14     |       |
 
 ---
@@ -51,14 +51,13 @@ This API:
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "lastReqDt": "20160523000000"
 }
 ```
 
 ---
 
-## Response Object: `ItemSearchRes`
+## Response Object: `ItemRes`
 
 ### Top-Level Fields
 
@@ -175,52 +174,15 @@ Each entry represents a **product item**.
 ## SDK Usage Examples
 
 <Tabs>
-  <TabItem value="python" label="Python" default>
-
-```python
-items = client.select_items({
-    'lastReqDt': last_req_dt(-30)
-})
-item_list = items.get('data', {}).get('itemList', [])
-print(f"Items found: {len(item_list)}")
-
-for item in item_list:
-    print(f"- Item Code: {item['itemCd']}")
-    print(f"  Name: {item['itemNm']}")
-    print(f"  Classification: {item['itemClsCd']}")
-    print(f"  Type: {item['itemTyCd']}")
-    print(f"  Origin: {item['orgnNatCd']}")
-    print(f"  Default Price: {item['dftPrc']}\n")
-```
-
-  </TabItem>
-
-  <TabItem value="js" label="JavaScript / Typescript">
-
-```ts
-const response = await client.selectItems({
-  lastReqDt: formatDateForEBM(-30)
-});
-
-const items = response.data?.itemList || [];
-console.log(`Found ${items.length} items`);
-
-items.slice(0, 3).forEach(item =>
-  console.log(`- ${item.itemCd}: ${item.itemNm} (${item.taxTyCd})`)
-);
-```
-
-  </TabItem>
-
-  <TabItem value="php" label="PHP">
+  <TabItem value="php" label="PHP" default>
 
 ```php
 $requestData = [
-    'lastReqDt' => last_req_dt('-30 days'),
+    'lastReqDt' => '20160523000000',
 ];
 
-$items = $client->selectItems($requestData);
-$itemList = $items['data']['itemList'] ?? [];
+$response = $client->selectItems($requestData);
+$itemList = $response['data']['itemList'] ?? [];
 
 echo "Items found: " . count($itemList) . "\n";
 
@@ -235,6 +197,45 @@ foreach ($itemList as $item) {
 ```
 
   </TabItem>
+
+  <TabItem value="js" label="JavaScript / TypeScript">
+
+```ts
+const response = await client.selectItems({
+  lastReqDt: '20160523000000'
+});
+
+const items = response.data?.itemList || [];
+console.log(`Found ${items.length} items`);
+
+items.slice(0, 3).forEach(item =>
+  console.log(`- ${item.itemCd}: ${item.itemNm} (${item.taxTyCd})`)
+);
+```
+
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+
+```python
+request_data = {
+    'lastReqDt': '20160523000000'
+}
+
+response = client.select_items(request_data)
+item_list = response.get('data', {}).get('itemList', [])
+print(f"Items found: {len(item_list)}")
+
+for item in item_list:
+    print(f"- Item Code: {item['itemCd']}")
+    print(f"  Name: {item['itemNm']}")
+    print(f"  Classification: {item['itemClsCd']}")
+    print(f"  Type: {item['itemTyCd']}")
+    print(f"  Origin: {item['orgnNatCd']}")
+    print(f"  Default Price: {item['dftPrc']}\n")
+```
+
+  </TabItem>
 </Tabs>
 
 ---
@@ -245,4 +246,3 @@ foreach ($itemList as $item) {
 - Cross-check **item classification**, **unit codes**, and **tax types** with **Code Lists**.
 - Cache item master data locally for faster access and offline capabilities.
 - Use `useYn = 'N'` instead of deleting items to maintain historical transaction integrity.
-

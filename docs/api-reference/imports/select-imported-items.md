@@ -8,11 +8,12 @@ import TabItem from '@theme/TabItem';
 
 # Import Item Search
 
-The **Select Import Item API** retrieves **imported item details** from the RRA EBM system based on a taxpayer PIN, branch ID, and last request date. It helps track **imported goods and related invoice data**.
+The **Select Import Item API** retrieves **imported item details** from the RRA EBM system via the VSDC interface based on a taxpayer PIN, branch ID, and last request date. It helps track **imported goods and related invoice data**.
 
 **Endpoint**
+
 ```http
-POST /selectImportItemList
+POST /imports/selectImportItems
 ```
 
 ---
@@ -21,24 +22,23 @@ POST /selectImportItemList
 
 This API:
 
-*   Returns a list of **imported items** for a given taxpayer and branch
-*   Provides details like **task code, declaration number, item name, quantity, supplier, and invoice amounts**
-*   Can be used to **monitor import items or for update workflows**
+*   Returns a list of **imported items** for a given taxpayer and branch.
+*   Provides details like **task code, declaration number, item name, quantity, supplier, and invoice amounts**.
+*   Can be used to **monitor import items or for update workflows**.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
 
 ---
 
-## Request Object: `ImportItemSearchReq`
+## Request Object: `ImptItemReq`
 
 ### Request Fields
 
-| Field       | Description       | Type | Required | Length | Format |
-|------------|-----------------|------|----------|--------|--------|
-| `tin`      | Taxpayer Identification Number | CHAR | ✅ Yes   | 9      | Buyer's TIN |
-| `bhfId`    | Branch ID       | CHAR | ✅ Yes   | 2      | Buyer's Branch ID |
-| `cmcKey`   | Communication Key | CHAR | ✅ Yes   | 255    | Security Key |
-| `lastReqDt`| Last Request Date | CHAR | ✅ Yes   | 14     | YYYYMMDDHHMMSS |
+| Field       | Description                  | Type | Required | Length | Format         |
+|-------------|------------------------------|------|----------|--------|----------------|
+| `tin`       | Taxpayer Identification Number | CHAR | ✅ Yes   | 9      | Buyer's TIN    |
+| `bhfId`     | Branch ID                    | CHAR | ✅ Yes   | 2      | Buyer's Branch ID |
+| `lastReqDt` | Last Request Date            | CHAR | ✅ Yes   | 14     | YYYYMMDDHHMMSS |
 
 ---
 
@@ -48,14 +48,13 @@ This API:
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "lastReqDt": "20190524000000"
 }
 ```
 
 ---
 
-## Response Object: `ImportItemSearchRes`
+## Response Object: `ImptItemRes`
 
 ### Top-Level Fields
 
@@ -196,15 +195,7 @@ for item in item_list:
 
 ## Best Practices
 
-*   Always include **TIN, Branch ID, and Communication Key** in the request payload.
 *   Handle non-`000` result codes gracefully.
 *   Expect `itemList` to be empty if no items exist for the request date.
 *   Do not cache import item data permanently (details may change).
-
----
-
-## Next Steps
-
-*   👉 **[Customers & Branches](../customers/select-customer)**
-*   👉 **[Items](../items/select-items)**
-*   👉 **[Purchases & Sales](../purchases/select-purchases)**
+*   Use the returned `taskCd`, `dclDe`, and `itemSeq` for subsequent **Update Import Item Status** operations.

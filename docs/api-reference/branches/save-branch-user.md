@@ -1,6 +1,6 @@
 ---
-title: Branch Users
-sidebar_label: Branch Users
+title: Save Branch User
+sidebar_label: Save Branch User
 ---
 
 import Tabs from '@theme/Tabs';
@@ -8,15 +8,16 @@ import TabItem from '@theme/TabItem';
 
 # Save Branch User
 
-This API function creates or updates a branch user account (employee) on the **RRA EBM server**.  
+This API function creates or updates a branch user account (employee) on the **RRA EBM server** via the VSDC interface.  
 It includes required user credentials, branch info, authority, and status.
 
 **Endpoint**
+
 ```http
-POST /saveBhfUser
+POST /branches/saveBrancheUsers
 ```
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
 
 ---
 
@@ -28,7 +29,6 @@ POST /saveBhfUser
 |------------|------------------------------|------|----------|--------|-------|
 | `tin`      | Taxpayer Identification Number | CHAR | ✅ Yes   | 9      | Seller's TIN |
 | `bhfId`    | Branch ID                    | CHAR | ✅ Yes   | 2      | Seller's Branch ID |
-| `cmcKey`   | Communication Key            | CHAR | ✅ Yes   | 255    | Security Key |
 | `userId`   | User ID                      | CHAR | ✅ Yes   | 20     |       |
 | `userNm`   | User Name                    | CHAR | ✅ Yes   | 60     |       |
 | `pwd`      | Password                     | CHAR | ✅ Yes   | 255    |       |
@@ -48,21 +48,20 @@ POST /saveBhfUser
 
 ```json
 {
-  "tin": "999991130",
+  "tin": "999000099",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "userId": "userId3",
-  "userNm": "User Name3",
+  "userNm": "UserName3",
   "pwd": "12341234",
   "adrs": null,
   "cntc": null,
   "authCd": null,
   "remark": null,
   "useYn": "Y",
-  "regrId": "Test",
-  "regrNm": "Test",
-  "modrId": "Test",
-  "modrNm": "Test"
+  "regrNm": "Admin",
+  "regrId": "Admin",
+  "modrNm": "Admin",
+  "modrId": "Admin"
 }
 ```
 
@@ -97,72 +96,22 @@ POST /saveBhfUser
 ## SDK Usage Examples
 
 <Tabs>
-  <TabItem value="python" label="Python" default>
-
-```python
-user_data = {
-    'userId': 'userId3',
-    'userNm': 'User Name3',
-    'pwd': '12341234',
-    'adrs': None,
-    'cntc': None,
-    'authCd': None,
-    'remark': None,
-    'useYn': 'Y',
-    'regrId': 'Test',
-    'regrNm': 'Test',
-    'modrId': 'Test',
-    'modrNm': 'Test',
-}
-
-response = client.save_branch_user(user_data)
-
-if response.get('resultCd') == '000':
-    print("✅ Branch user saved successfully")
-else:
-    raise Exception(f"Failed to save branch user: {response.get('resultMsg', 'Unknown error')}")
-```
-
-  </TabItem>
-
-  <TabItem value="js" label="JavaScript / TypeScript">
-
-```ts
-const response = await client.saveBranchUser({
-  userId: `user_${Date.now()}`,
-  userNm: `Test User ${Date.now()}`,
-  pwd: 'SecurePass123!',
-  useYn: 'Y',
-  regrId: 'Test',
-  regrNm: 'Test',
-  modrId: 'Test',
-  modrNm: 'Test',
-});
-
-console.log(`✅ Branch user saved: ${response.resultMsg}`);
-if (response.resultCd !== '000') {
-  throw new Error(`Failed: ${response.resultMsg}`);
-}
-```
-
-  </TabItem>
-
-  <TabItem value="php" label="PHP">
+  <TabItem value="php" label="PHP" default>
 
 ```php
 $requestData = [
     'userId'  => 'userId3',
-    'userNm'  => 'User Name3',
+    'userNm'  => 'UserName3',
     'pwd'     => '12341234',
     'adrs'    => null,
     'cntc'    => null,
     'authCd'  => null,
     'remark'  => null,
     'useYn'   => 'Y',
-    'regrId'  => 'Test',
-    'regrNm'  => 'Test',
-    'modrId'  => 'Test',
-    'modrNm'  => 'Test',
+    'regrId'  => 'Admin',
+    'regrNm'  => 'Admin',
+    'modrId'  => 'Admin',
+    'modrNm'  => 'Admin',
 ];
 
 $response = $client->saveBranchUser($requestData);
@@ -175,14 +124,68 @@ if (($response['resultCd'] ?? '') === '000') {
 ```
 
   </TabItem>
+
+  <TabItem value="js" label="JavaScript / TypeScript">
+
+```ts
+const response = await client.saveBranchUser({
+  userId: 'userId3',
+  userNm: 'UserName3',
+  pwd: '12341234',
+  adrs: null,
+  cntc: null,
+  authCd: null,
+  remark: null,
+  useYn: 'Y',
+  regrId: 'Admin',
+  regrNm: 'Admin',
+  modrId: 'Admin',
+  modrNm: 'Admin',
+});
+
+console.log(`✅ Branch user saved: ${response.resultMsg}`);
+if (response.resultCd !== '000') {
+  throw new Error(`Failed: ${response.resultMsg}`);
+}
+```
+
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+
+```python
+user_data = {
+    'userId': 'userId3',
+    'userNm': 'UserName3',
+    'pwd': '12341234',
+    'adrs': None,
+    'cntc': None,
+    'authCd': None,
+    'remark': None,
+    'useYn': 'Y',
+    'regrId': 'Admin',
+    'regrNm': 'Admin',
+    'modrId': 'Admin',
+    'modrNm': 'Admin',
+}
+
+response = client.save_branch_user(user_data)
+
+if response.get('resultCd') == '000':
+    print("✅ Branch user saved successfully")
+else:
+    raise Exception(f"Failed to save branch user: {response.get('resultMsg', 'Unknown error')}")
+```
+
+  </TabItem>
 </Tabs>
 
 ---
 
 ## Best Practices
 
-* Always include the authentication headers (`tin`, `bhfId`, `cmcKey`) in the request.
 * Always use a **unique `userId`** for each branch user.
 * Ensure `useYn` reflects whether the user is active.
 * Store `regrId` and `modrId` for auditing.
-* Optional fields (`adrs`, `cntc`, `authCd`, `remark`) can be left `null`.
+* Optional fields (`adrs`, `cntc`, `authCd`, `remark`) can be left `null` if not applicable.
+* Ensure passwords meet any internal security requirements before sending them to the API.

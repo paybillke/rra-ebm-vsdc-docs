@@ -1,6 +1,6 @@
 ---
-title: Branches
-sidebar_label: Branches
+title: Branch Search
+sidebar_label: Branch Search
 ---
 
 import Tabs from '@theme/Tabs';
@@ -8,12 +8,13 @@ import TabItem from '@theme/TabItem';
 
 # Branch Search 
 
-The **Branch Search API** retrieves branch information for a taxpayer from the **RRA EBM system**.  
+The **Branch Search API** retrieves branch information for a taxpayer from the **RRA EBM system** via the VSDC interface.  
 This includes details such as branch name, location, manager, and head office status.
 
 **Endpoint**
+
 ```http
-POST /selectBhfList
+POST /branches/selectBranches
 ```
 
 ---
@@ -28,11 +29,11 @@ This API:
 
 > ⚠️ Always verify branch status codes (`bhfSttsCd`) and head office flag (`hqYn`) before performing operations.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
 
 ---
 
-## Request Object: `BhfSearchReq`
+## Request Object: `BhfReq`
 
 ### Request Fields
 
@@ -40,7 +41,6 @@ This API:
 |-------------|-------------------------------------|------|----------|--------|-------|
 | `tin`       | Taxpayer Identification Number      | CHAR | ✅ Yes   | 9      |       |
 | `bhfId`     | Branch ID                           | CHAR | ✅ Yes   | 2      |       |
-| `cmcKey`    | Communication Key                   | CHAR | ✅ Yes   | 255    |       |
 | `lastReqDt` | Last request date (YYYYMMDDHHmmss)  | CHAR | ✅ Yes   | 14     |       |
 
 ---
@@ -51,14 +51,13 @@ This API:
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "lastReqDt": "20191130000000"
 }
 ```
 
 ---
 
-## Response Object: `BhfSearchRes`
+## Response Object: `BhfRes`
 
 ### Top-Level Fields
 
@@ -139,53 +138,11 @@ Each entry represents a **branch**.
 ## SDK Usage Examples
 
 <Tabs>
-  <TabItem value="python" label="Python" default>
-
-```python
-branches = client.select_branches({
-    'lastReqDt': last_req_dt(-30)
-})
-bhf_list = branches.get('data', {}).get('bhfList', [])
-print(f"Branches found: {len(bhf_list)}")
-
-for branch in bhf_list:
-    print(f"- Branch ID: {branch['bhfId']}")
-    print(f"  Name: {branch['bhfNm']}")
-    print(f"  Status: {branch['bhfSttsCd']}")
-    print(f"  Province: {branch['prvncNm']}")
-    print(f"  District: {branch['dstrtNm']}")
-    print(f"  Sector: {branch['sctrNm']}")
-    print(f"  Location: {branch['locDesc']}")
-    print(f"  Manager: {branch['mgrNm']}")
-    print(f"  Phone: {branch['mgrTelNo']}")
-    print(f"  Email: {branch['mgrEmail']}")
-    print(f"  Head Office: {branch['hqYn']}\n")
-```
-
-  </TabItem>
-
-  <TabItem value="js" label="JavaScript / TypeScript">
-
-```ts
-const response = await client.selectBranches({
-  lastReqDt: formatDateForEBM(-30)
-});
-
-const branches = response.data?.bhfList || [];
-console.log(`Found ${branches.length} branches`);
-
-branches.forEach(branch =>
-  console.log(`- ${branch.bhfId}: ${branch.bhfNm} (${branch.bhfSttsCd})`)
-);
-```
-
-  </TabItem>
-
-  <TabItem value="php" label="PHP">
+  <TabItem value="php" label="PHP" default>
 
 ```php
 $requestData = [
-    'lastReqDt' => last_req_dt('-30 days'),
+    'lastReqDt' => '20191130000000',
 ];
 
 $branches = $client->selectBranches($requestData);
@@ -209,6 +166,50 @@ foreach ($bhfList as $branch) {
 ```
 
   </TabItem>
+
+  <TabItem value="js" label="JavaScript / TypeScript">
+
+```ts
+const response = await client.selectBranches({
+  lastReqDt: '20191130000000'
+});
+
+const branches = response.data?.bhfList || [];
+console.log(`Found ${branches.length} branches`);
+
+branches.forEach(branch =>
+  console.log(`- ${branch.bhfId}: ${branch.bhfNm} (${branch.bhfSttsCd})`)
+);
+```
+
+  </TabItem>
+
+  <TabItem value="python" label="Python">
+
+```python
+request_data = {
+    'lastReqDt': '20191130000000'
+}
+
+branches = client.select_branches(request_data)
+bhf_list = branches.get('data', {}).get('bhfList', [])
+print(f"Branches found: {len(bhf_list)}")
+
+for branch in bhf_list:
+    print(f"- Branch ID: {branch['bhfId']}")
+    print(f"  Name: {branch['bhfNm']}")
+    print(f"  Status: {branch['bhfSttsCd']}")
+    print(f"  Province: {branch['prvncNm']}")
+    print(f"  District: {branch['dstrtNm']}")
+    print(f"  Sector: {branch['sctrNm']}")
+    print(f"  Location: {branch['locDesc']}")
+    print(f"  Manager: {branch['mgrNm']}")
+    print(f"  Phone: {branch['mgrTelNo']}")
+    print(f"  Email: {branch['mgrEmail']}")
+    print(f"  Head Office: {branch['hqYn']}\n")
+```
+
+  </TabItem>
 </Tabs>
 
 ---
@@ -219,4 +220,3 @@ foreach ($bhfList as $branch) {
 - Verify `hqYn` to differentiate **head office vs branch** operations.
 - Cache branch data locally for faster lookups in other operations.
 - Ensure correct branch IDs when creating or updating items, transactions, or notices.
-

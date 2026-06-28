@@ -13,7 +13,7 @@ The **Stock Movement API** retrieves stock movement records, including stock in/
 **Endpoint**
 
 ```text
-POST /selectStockMoveList
+POST /stock/selectStockItems
 ```
 
 ---
@@ -26,7 +26,7 @@ This API:
 - Returns item-level stock movement information, including quantities, pricing, and taxes.
 - Supports inventory reconciliation, reporting, and auditing.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields documented below.
+> ℹ️ The RRA API requires `tin` and `bhfId` with every request. Ensure your VSDC is properly registered and authenticated before making this call.
 
 ---
 
@@ -36,12 +36,16 @@ This API:
 
 | Field | Description | Type | Required | Length |
 |------|-------------|------|----------|-------:|
+| `tin` | Taxpayer Identification Number | CHAR | ✅ Yes | 9 |
+| `bhfId` | Branch ID | CHAR | ✅ Yes | 2 |
 | `lastReqDt` | Last request date and time (`YYYYMMDDHHmmss`) | CHAR | ✅ Yes | 14 |
 
 ### JSON Request Example
 
 ```json
 {
+  "tin": "999991130",
+  "bhfId": "00",
   "lastReqDt": "20180524000000"
 }
 ```
@@ -152,12 +156,11 @@ Each entry represents a stock movement transaction.
 
 ## SDK Usage Examples
 
-The SDK automatically includes `tin`, `bhfId`, and `cmcKey`, so only `lastReqDt` needs to be supplied.
-
 <Tabs>
   <TabItem value="php" label="PHP" default>
 
 ```php
+// Assuming $client is your configured VSDC API client
 $response = $client->selectStockMovement([
     'lastReqDt' => date('YmdHis', strtotime('-30 days'))
 ]);
@@ -196,8 +199,8 @@ stock_list = response.get("data", {}).get("stockList", [])
 
 ## Best Practices
 
-- Provide `lastReqDt` to retrieve only newly created or updated stock movements.
-- Verify that the request completed successfully by checking `resultCd`.
-- Handle an empty `stockList` when no stock movements match the requested date.
-- Use the item list to reconcile inventory movements and audit stock transactions.
-- Validate package unit, quantity unit, and tax type codes against the published RRA code lists.
+- **Provide `lastReqDt`:** Use this parameter to retrieve only newly created or updated stock movements since your last check.
+- **Verify Success:** Always check that `resultCd` is `000` to confirm the request was processed successfully.
+- **Handle Empty Results:** Be prepared to handle an empty `stockList` if no stock movements match the requested date range.
+- **Reconciliation:** Use the detailed item list to reconcile inventory movements and audit stock transactions against your internal records.
+- **Validate Codes:** Ensure package unit, quantity unit, and tax type codes are validated against the published RRA code lists.

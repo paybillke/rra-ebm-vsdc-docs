@@ -1,18 +1,19 @@
 ---
-title: Update Imported Item
-sidebar_label: Update Imported Item
+title: Update Import Item Status (VSDC)
+sidebar_label: Update Import Item Status
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Update Imported Item
+# Update Import Item Status
 
-The **Update Imported Item API** updates details of an imported item in the RRA EBM system, such as status, classification, or remarks. This is commonly used to **modify import item records** after initial entry.
+The **Update Import Item Status API** updates details of an imported item in the RRA EBM system via the VSDC interface, such as status, classification, or remarks. This is commonly used to **modify import item records** after initial entry.
 
 **Endpoint**
+
 ```http
-POST /updateImportItem
+POST /imports/updateImportItems
 ```
 
 ---
@@ -21,17 +22,17 @@ POST /updateImportItem
 
 This API:
 
-*   Updates an **imported item record** based on task code, declaration date, and item sequence
-*   Allows updating **item status, classification, and optional remarks**
-*   Requires **valid task and declaration references** for the item to be updated
+*   Updates an **imported item record** based on task code, declaration date, and item sequence.
+*   Allows updating **item status, classification, and optional remarks**.
+*   Requires **valid task and declaration references** for the item to be updated.
 
 > ℹ️ Ensure `taskCd`, `dclDe`, and `itemSeq` are valid and exist in your environment. 
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ The RRA API requires `tin`, `bhfId`, and authentication credentials with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
 
 ---
 
-## Request Object: `ImportItemUpdateReq`
+## Request Object: `ImptItemSaveReq`
 
 ### Authentication & Request Fields
 
@@ -39,7 +40,6 @@ This API:
 |-----------------|---------------------------------|---------|---------|--------|----------------|
 | `tin`           | Taxpayer Identification Number  | CHAR    | ✅ Yes  | 9      | Buyer's TIN |
 | `bhfId`         | Branch ID                       | CHAR    | ✅ Yes  | 2      | Buyer's Branch ID |
-| `cmcKey`        | Communication Key               | CHAR    | ✅ Yes  | 255    | Security Key |
 | `taskCd`        | Task Code                       | CHAR    | ✅ Yes  | 50     |                |
 | `dclDe`         | Declaration Date                | CHAR    | ✅ Yes  | 8      | YYYYMMDD       |
 | `itemSeq`       | Item Sequence                   | NUMBER  | ✅ Yes  | 10     |                |
@@ -59,7 +59,6 @@ This API:
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "taskCd": "2231943",
   "dclDe": "20191217",
   "itemSeq": 1,
@@ -68,14 +67,14 @@ This API:
   "itemCd": "RW1NTXU0000001",
   "imptItemSttsCd": "1",
   "remark": "Updated remark",
-  "modrId": "Test",
-  "modrNm": "Test"
+  "modrId": "Admin",
+  "modrNm": "Admin"
 }
 ```
 
 ---
 
-## Response Object: `ImportItemUpdateRes`
+## Response Object: `ImptItemSaveRes`
 
 ### Top-Level Fields
 
@@ -118,8 +117,8 @@ $requestData = [
     'itemCd'         => 'RW1NTXU0000001',
     'imptItemSttsCd' => '1',
     'remark'         => 'Updated remark',
-    'modrId'         => 'Test',
-    'modrNm'         => 'Test',
+    'modrId'         => 'Admin',
+    'modrNm'         => 'Admin',
 ];
 
 $response = $client->updateImportedItem($requestData);
@@ -144,9 +143,9 @@ const response = await client.updateImportedItem({
   itemClsCd: '5022110801',
   itemCd: 'RW1NTXU0000001',
   imptItemSttsCd: '1',
-  remark: 'Updated via Vitest',
-  modrId: 'Test',
-  modrNm: 'Test',
+  remark: 'Updated via SDK',
+  modrId: 'Admin',
+  modrNm: 'Admin',
 });
 
 console.log(`✅ Import item updated: ${response.resultMsg}`);
@@ -166,8 +165,8 @@ import_data = {
     'itemCd': 'RW1NTXU0000001',
     'imptItemSttsCd': '1',
     'remark': 'Updated remark',
-    'modrId': 'Test',
-    'modrNm': 'Test',
+    'modrId': 'Admin',
+    'modrNm': 'Admin',
 }
 
 response = client.update_imported_item(import_data)
@@ -185,16 +184,7 @@ else:
 
 ## Best Practices
 
-*   Always include **TIN, Branch ID, and Communication Key** in the request payload.
 *   Always use **valid `taskCd`, `dclDe`, and `itemSeq`** from your system environment.
 *   Handle non-`000` result codes gracefully.
 *   Include meaningful remarks for audit trail.
 *   Updates are **permanent**, ensure data correctness before submission.
-
----
-
-## Next Steps
-
-*   👉 **[Import Item Search](../imports/select-imported-items)**
-*   👉 **[Customers & Branches](../customers/select-customer)**
-*   👉 **[Items](../items/select-items)**

@@ -19,7 +19,7 @@ Item classifications define:
 
 **Endpoint**
 ```http
-POST /selectItemClsList
+POST /itemClass/selectItemsClass
 ```
 
 ---
@@ -34,11 +34,11 @@ This API:
 
 > ℹ️ Item classification data should be **cached locally** and refreshed periodically.
 
-> ℹ️ The RRA API requires `tin`, `bhfId`, and `cmcKey` with every request. When using this SDK, these fields are automatically included, so you only need to provide the fields below.
+> ℹ️ Your CIS/ERP should store the latest successful `lastReqDt` for this lookup and send it on the next request.
 
 ---
 
-## Request Object: `ItemClsSearchReq`
+## Request Object: `ItemClsReq`
 
 ### Request Fields
 
@@ -46,7 +46,6 @@ This API:
 |-------------|-------------------------------------|------|----------|--------|-------|
 | `tin`       | Taxpayer Identification Number      | CHAR | ✅ Yes   | 9      |       |
 | `bhfId`     | Branch ID                           | CHAR | ✅ Yes   | 2      |       |
-| `cmcKey`    | Communication Key                   | CHAR | ✅ Yes   | 255    |       |
 | `lastReqDt` | Last Request Date (YYYYMMDDHHmmss)  | CHAR | ✅ Yes   | 14     |       |
 
 > 🔎 Only item classifications **registered or updated after `lastReqDt`** are returned.
@@ -59,21 +58,20 @@ This API:
 {
   "tin": "999991130",
   "bhfId": "00",
-  "cmcKey": "YOUR_COMMUNICATION_KEY_HERE",
   "lastReqDt": "20180523000000"
 }
 ```
 
 ---
 
-## Response Object: `ItemClsSearchRes`
+## Response Object: `ItemClsRes`
 
 ### Top-Level Fields
 
-| Field       | Description                   | Type     | Length |
-| ----------- | ----------------------------- | -------- | ------ |
-| `resultCd`  | Result code (`000` = success) | CHAR     | 3      |
-| `resultMsg` | Result message                | CHAR     | -      |
+| Field       | Description                   | Type     | Length | Format / Notes |
+| ----------- | ----------------------------- | -------- | ------ | -------------- |
+| `resultCd`  | Result code (`000` = success) | CHAR     | 3      |                |
+| `resultMsg` | Result message                | CHAR     | -      |                |
 | `resultDt`  | Response timestamp            | CHAR     | 14     | YYYYMMDDhhmmss |
 | `data`      | Response data                 | Object   | -      | Contains `itemClsList` |
 
@@ -217,5 +215,5 @@ for item in item_cls_list:
 ## Next Steps
 
 *   👉 **[Items](./select-items)**
-*   👉 **[Code Lists](../codes/select-code-list)**
-*   👉 **[Sales Transactions](../transactions/save-sales-transaction)**
+*   👉 **[Code Lists](../select-code-list)**
+*   👉 **[Sales Transactions](../purchases/save-sales-transaction)**
